@@ -1,0 +1,394 @@
+RHCSA: My study guide
+
+
+
+RHCSA Exam Objectives (as of 30/03/2011)
+
+
+Understand and Use Essential Tools
+
+
+Access a shell prompt and issue commands with correct syntax
+
+Use /bin/sh -or- /bin/bash
+
+Use input-output redirection (>, >>, |, 2>, etc.)
+
+stdout to file (>)
+stderr to file (2>)
+append to file (>>)
+stderr to stdout (2>&1)
+ex. iptables -L -n -v -x >> /tmp/ipt.out 2>&1 — redirect stdin and stdout to /tmp/ipt.out
+
+Use grep and regular expressions to analyze text
+
+grep expr -or- egrep expr
+ex. tail -f /var/log/messages | egrep ‘(kernel|error)’ — only show lines containing kernel or error strings
+ex. cat /etc/httpd/conf/httpd.conf | grep -v ‘^#’ — omit lines starting with # character
+
+Access remote systems using ssh and VNC
+
+SSH:
+ssh user@host
+VNC:
+vncviewer host:display
+vncviewer host::port
+
+Log in and switch users in multi-user runlevels
+
+su – user
+
+Archive, compress, unpack and uncompress files using tar, star, gzip, and bzip2
+
+Compress:
+tar cfz archive.tar.gz infile1 infile2
+ex. tar cfz /tmp/httpd_conf.tar.gz /etc/httpd
+Uncompress:
+tar xfz archive.tar.gz
+The rest of the commands are similar. Use –help and read their man page
+
+Create and edit text files
+
+vim file -or- nano file
+
+Create, delete, copy and move files and directories
+
+Create/touch: touch file
+ex. touch /tmp/i_was_here
+Move/rename: mv srcfile dstfile
+ex. mv /home/john/httpd.conf /etc/httpd/conf/httpd.conf
+Remove: rm file
+ex. rm /home/john/httpd.conf.old
+Copy: cp srcfile dstfile
+ex. cp httpd.conf httpd.conf.backup
+
+Create hard and soft links
+
+Soft link: ln -s srcfile dstlink
+ex. ln -s /mnt/data/docs /home/john/Desktop/documents — soft link from /mnt/data/docs to Desktop
+Hard link: ln srcfile dstlink
+
+List, set and change standard ugo/rwx permissions
+
+List: ls -l
+Change: chmod mode file
+ex.
+chmod u=rwx,g=rx,o=rx myscript.sh
+chmod 755 myscript.sh
+(755 is equivalent to u=rwx,g=rx,o=rx)
+
+Locate, read and use system documentation including man, info, and files in /usr/share/doc
+
+apropos keyword
+whatis keyword
+man -k keyword
+man command
+info command
+fgrep -Ri keyword /usr/share/doc/package
+Red Hat may use applications during the exam that are not included in Red Hat Enterprise Linux for the purpose of evaluating candidate’s abilities to meet this objective.
+
+
+Operate Running Systems
+
+
+Boot, reboot, and shut down a system normally
+
+reboot
+shutdown -h now
+
+Boot systems into different runlevels manually
+
+append 1 up to 5 to kernel boot options (press e in grub menu to edit a line)
+
+Use single-user mode to gain access to a system
+
+append 1 to kernel boot options (press e in grub menu to edit a line)
+
+Identify CPU/memory intensive processes, adjust process priority with renice, and kill processes
+
+Identify: top (use shift-f to select sort column)
+Adjust priority: renice -20|0|20 pid
+Kill: kill -9 pid -or- killall -9 name -or- pkill -f expr
+
+Locate and interpret system log files
+
+Look for logs in /var/log/.
+/var/log/messages file is an important system log!
+
+Access a virtual machine’s console
+
+virt-manager
+OR virt-viewer
+OR:
+virsh vncdisplay domain
+vncviewer localhost:display
+
+Start and stop virtual machines
+
+virt-manager
+OR:
+virsh start domain
+virsh shutdown domain
+
+Start, stop and check the status of network services
+
+service service_name stop
+service service_name start
+service service_name status
+ex. service httpd stop – stop http server
+
+Configure Local Storage
+
+
+List, create, delete and set partition type for primary, extended, and logical partitions
+
+List: fdisk -l
+Modify: cfdisk device -or- fdisk device -or- parted
+
+Create and remove physical volumes, assign physical volumes to volume groups, create and delete logical volumes
+
+Physical volumes:
+pvcreate –help
+pvremove –help
+Volume groups:
+vgcreate –help
+vgremove –help
+Logical volumes:
+lvcreate –help
+lvremove –help
+
+Create and configure LUKS-encrypted partitions and logical volumes to prompt for password and mount a decrypted file system at boot
+
+cryptsetup luksFormat device
+cryptsetup luksOpen device mappername
+mkfs.fs mappername
+edit /etc/crypttab: mappername device none
+(/etc/crypttab: use UUID or LABEL for device)
+edit /etc/fstab: /dev/mapper/mappername /mpoint (…)
+
+Configure systems to mount file systems at boot by Universally Unique ID (UUID) or label
+
+Find a device’s UUID or LABEL:
+blkid device
+OR ls -l /dev/disk/by-* | grep device
+Edit /etc/fstab:
+use LABEL=label or UUID=uuid to specify the device
+
+Add new partitions, logical volumes and swap to a system non-destructively
+
+Create a partition:
+cfdisk device -or- fdisk device -or- parted
+Create a logical volume:
+lvcreate –help
+Add swap:
+mkswap device
+swapon device
+
+Create and Configure File Systems
+
+
+Create, mount, unmount and use ext2, ext3 and ext4 file systems
+
+Create: mkfs.extfs
+Mount: mount device /mpoint
+Unmount: umount device
+
+Mount, unmount and use LUKS-encrypted file systems
+
+cryptsetup luksOpen device mappername
+mount /dev/mapper/mappername /mpoint
+umount /dev/mapper/mappername
+cryptsetup luksClose mappername
+
+Mount and unmount CIFS and NFS network file systems
+
+Mount:
+NFS: mount -t nfs host:/share /mpoint
+CIFS: mount -t cifs -o “username=,password=” //host/share /mpoint
+Unmount: umount /mpoint
+
+Configure systems to mount ext4, LUKS-encrypted and network file systems automatically
+
+Configure /etc/auto.*:
+nfs: mpoint -rw,intr host:/remote/mpoint
+device: mpoint -fstype=fstype :device
+
+Extend existing unencrypted ext4-formatted logical volumes
+
+lvresize –help -or- lvextend –help
+ex. lvresize -L+1G lv — add 1G to lv
+
+Create and configure set-GID directories for collaboration
+
+chmod g+s dir
+create group shared_grp
+chgrp shared_grp dir
+Add users to shared_grp
+
+Create and manage Access Control Lists (ACLs)
+
+View acl: getfacl file
+Modify: setfacl -m mode file
+ex. setfacl -m u:john:rw /home/anna/prv_file
+Remove: setfacl -x mode file
+
+Diagnose and correct file permission problems
+
+Diagnose:
+ls -laZ
+getfacl file
+check /var/log/audit/audit.log for selinux errors
+Fix:
+chmod mode file
+setfacl -m mode file
+
+Deploy, Configure and Maintain Systems
+
+
+Configure networking and hostname resolution statically or dynamically
+
+Create static hostnames: /etc/hosts
+Configure dns servers: /etc/resolv.conf
+Manage resolution order: /etc/nsswitch.conf
+
+Schedule tasks using cron
+
+crontab -e
+OR edit /etc/cron.*/file:
+ex. vim /etc/cron.daily/mycron
+
+Configure systems to boot into a specific runlevel automatically
+
+Edit /etc/inittab and modify initdefault with values from 1..5
+
+Install Red Hat Enterprise Linux automatically using Kickstart
+
+Use kernel boot options:
+linux ks=ftp/http://host/ks.cfg
+linux ks=nfs:host:/ks.cfg
+linux ks=cdrom:/dev/dir/ks.cfg
+linux ks=hd:/dev/dir/ks.cfg
+linux ks=file:/dev/dir/ks.cfg
+
+Configure a physical machine to host virtual guests
+
+Use virt-manager
+
+Install Red Hat Enterprise Linux systems as virtual guests
+
+Use virt-manager
+
+Configure systems to launch virtual machines at boot
+
+Use virt-manager -or- virsh autostart domain
+
+Configure network services to start automatically at boot
+
+Configure: chkconfig service on -or- ntsysv
+View startup services: chkconfig –list
+
+Configure a system to run a default configuration HTTP server
+
+yum install httpd
+service httpd start
+chkconfig httpd on
+update /etc/sysconfig/iptables (open port tcp 80)
+
+Configure a system to run a default configuration FTP server
+
+yum install vsftpd
+service vsftpd start
+chkconfig vsftpd on
+update /etc/sysconfig/iptables (open port tcp 21)
+
+Install and update software packages from Red Hat Network, a remote repository, or from the local filesystem
+
+yum search name
+yum install package
+yum update package
+
+Update the kernel package appropriately to ensure a bootable system
+
+rpm -ivh new_kernel.rpm
+OR yum install kernel
+
+Modify the system bootloader
+
+Edit /boot/grub/grub.conf
+
+Manage Users and Groups
+
+
+Create, delete, and modify local user accounts
+
+Add: useradd
+Delete: userdel
+Modify: usermod
+View /etc/passwd
+
+Change passwords and adjust password aging for local user accounts
+
+Change password: passwd user
+Change aging: chage -E YYYY-MM-DD user
+
+Create, delete and modify local groups and group memberships
+
+Add: groupadd
+Delete: groupdel
+Modify: groupmod
+Memberships: edit /etc/group
+
+Configure a system to use an existing LDAP directory service for user and group information
+
+Use system-config-authentication
+
+Manage Security
+
+
+Configure firewall settings using system-config-firewall or iptables
+
+Insert: iptables -t TABLE -I CHAIN …
+Append: iptables -t TABLE -A CHAIN …
+Delete: iptables -t TABLE -D CHAIN …
+Flush table: iptables -t TABLE -F
+Save persistent changes to /etc/sysconfig/iptables
+
+Set enforcing and permissive modes for SELinux
+
+Persistent change:
+/etc/selinux/config:
+SELINUX=enforcing|permissiveCurrent session:
+Non persistent change:
+setenforce 1|0|enforcing|permissive
+
+View SELinux status:
+
+sestatus
+
+List and identify SELinux file and process context
+
+ls -lZ
+ps -efZ
+
+Restore default file contexts
+
+restorecon -R file
+
+Use boolean settings to modify system SELinux settings
+
+View booleans:
+getsebool -a | grep keyword
+OR semanage boolean -l | grep keyword
+Change booleans:
+setsebool -P boolean on|off
+
+Diagnose and address routine SELinux Policy violations
+
+Diagnose:
+/var/log/audit/audit.log
+/var/log/messages
+view service logs
+sealert
+Fix:
+audit2allow
+setsebool -P boolean on|off
